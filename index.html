@@ -454,7 +454,23 @@
 
                 if (!hasReachedTarget) {
                     hasReachedTarget = true;
-                    triggerLoveFireworks();
+                    // تشغيل الألعاب النارية بشكل مستمر ودائم لا ينتهي
+                    setInterval(function() {
+                        confetti({
+                            particleCount: 60,
+                            angle: 60,
+                            spread: 70,
+                            origin: { x: 0, y: 0.7 },
+                            colors: ['#f43f5e', '#fb7185', '#facc15', '#ffffff']
+                        });
+                        confetti({
+                            particleCount: 60,
+                            angle: 120,
+                            spread: 70,
+                            origin: { x: 1, y: 0.7 },
+                            colors: ['#f43f5e', '#fb7185', '#facc15', '#ffffff']
+                        });
+                    }, 800);
                 }
             }
         }
