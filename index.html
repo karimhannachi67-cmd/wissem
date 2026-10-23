@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karim & Wissem | Counting Down to Our First Date</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rose: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            200: '#fecdd3',
+                            300: '#fda4af',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                            800: '#9f1239',
+                            900: '#881337',
+                            950: '#4c0519',
+                        },
+                        amber: {
+                            300: '#fde047',
+                            400: '#facc15',
+                            500: '#eab308',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 5s ease-in-out infinite',
+                        'heartbeat': 'heartbeat 1.5s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-12px)' },
+                        },
+                        heartbeat: {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.15)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0c0512;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card-hover {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass-card-hover:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(244, 63, 94, 0.4);
+            transform: translateY(-6px);
+            box-shadow: 0 15px 35px rgba(244, 63, 94, 0.15);
+        }
+
+        .text-gradient-rose {
+            background: linear-gradient(135deg, #fecdd3 0%, #fb7185 50%, #f43f5e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-gradient-gold {
+            background: linear-gradient(135deg, #fef08a 0%, #facc15 50%, #eab308 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0c0512;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #be123c;
+            border-radius: 4px;
+        }
+
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .letter-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.8s ease-in-out;
+        }
+
+        .letter-content.open {
+            max-height: 1200px;
+            opacity: 1;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen text-slate-100 selection:bg-rose-500 selection:text-white">
+
+    <!-- Interactive Particle Background Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Floating Audio Control Widget -->
+    <div class="fixed top-5 left-5 z-50">
+        <div class="glass-card rounded-full p-2 pr-4 flex items-center space-x-3 shadow-2xl border border-rose-500/30 backdrop-blur-md">
+            <button id="musicToggleBtn" onclick="toggleAudio()" class="w-11 h-11 rounded-full bg-gradient-to-r from-rose-600 to-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-600/40 hover:scale-105 active:scale-95 transition-all">
+                <i id="musicIcon" class="fas fa-music text-lg"></i>
+            </button>
+            <div class="hidden sm:block text-xs">
+                <p class="font-bold text-rose-200">Melody of Anticipation</p>
+                <p id="musicStatus" class="text-slate-400 text-[10px]">Click to play soft tunes</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Header -->
+    <header class="fixed top-5 right-5 z-50">
+        <div class="glass-card rounded-full px-5 py-2.5 flex items-center gap-4 text-xs font-semibold text-rose-200 shadow-xl border border-white/10">
+            <a href="#hero" class="hover:text-rose-400 transition-colors">Countdown</a>
+            <span class="text-slate-600">•</span>
+            <a href="#timeline" class="hover:text-rose-400 transition-colors">Our Journey</a>
+            <span class="text-slate-600">•</span>
+            <a href="#letter" class="hover:text-rose-400 transition-colors">Love Letter</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 space-y-20 pb-20">
+
+        <!-- 1. HERO SECTION: Countdown & Anticipation -->
+        <section id="hero" class="min-h-screen flex flex-col items-center justify-center px-4 pt-20 relative overflow-hidden">
+            <!-- Ambient Glow Background -->
+            <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[650px] h-[350px] sm:h-[650px] bg-rose-600/15 rounded-full blur-[130px] pointer-events-none"></div>
+
+            <div class="text-center max-w-3xl mx-auto space-y-6 animate-float">
+                <!-- Status Badge -->
+                <div id="statusBadge" class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-rose-500/40 text-rose-300 text-sm font-medium shadow-inner">
+                    <i class="fas fa-heart text-rose-500 animate-heartbeat"></i>
+                    <span>The Upcoming First Date • October 23, 2026 - 15:00</span>
+                    <i class="fas fa-sparkles text-amber-300"></i>
+                </div>
+
+                <!-- Main Names Header -->
+                <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight font-serif">
+                    <span class="text-gradient-rose">Karim</span>
+                    <span class="text-amber-300 text-3xl sm:text-5xl mx-3 font-normal">&amp;</span>
+                    <span class="text-gradient-rose">Wissem</span>
+                </h1>
+
+                <!-- Romantic Tagline for Waiting -->
+                <p class="text-slate-300 text-lg sm:text-xl font-light max-w-xl mx-auto leading-relaxed font-serif italic">
+                    "Every second passing brings us closer to the moment our eyes meet and time stands still..."
+                </p>
+
+                <!-- Intelligent Live Countdown Card -->
+                <div class="mt-8 pt-2">
+                    <div class="glass-card rounded-3xl p-6 sm:p-8 border border-rose-500/30 shadow-2xl max-w-2xl mx-auto relative overflow-hidden">
+                        
+                        <!-- Header Message -->
+                        <div class="flex items-center justify-center gap-2 mb-6">
+                            <i class="fas fa-hourglass-start text-amber-400 text-base animate-pulse"></i>
+                            <h3 id="countdownHeaderTitle" class="text-sm sm:text-base text-rose-200 font-bold tracking-wider">
+                                Time Remaining Until Our Promised Meeting
+                            </h3>
+                        </div>
+
+                        <!-- Grid Display for Digits -->
+                        <div class="grid grid-cols-4 gap-2 sm:gap-4 text-center">
+                            <div class="glass-card bg-rose-950/30 rounded-2xl p-3 sm:p-4 border border-rose-500/20">
+                                <span id="days" class="block text-2xl sm:text-4xl font-extrabold text-white font-mono">00</span>
+                                <span class="text-[11px] sm:text-xs text-rose-300 font-medium mt-1 block">Days</span>
+                            </div>
+                            <div class="glass-card bg-rose-950/30 rounded-2xl p-3 sm:p-4 border border-rose-500/20">
+                                <span id="hours" class="block text-2xl sm:text-4xl font-extrabold text-white font-mono">00</span>
+                                <span class="text-[11px] sm:text-xs text-rose-300 font-medium mt-1 block">Hours</span>
+                            </div>
+                            <div class="glass-card bg-rose-950/30 rounded-2xl p-3 sm:p-4 border border-rose-500/20">
+                                <span id="minutes" class="block text-2xl sm:text-4xl font-extrabold text-white font-mono">00</span>
+                                <span class="text-[11px] sm:text-xs text-rose-300 font-medium mt-1 block">Minutes</span>
+                            </div>
+                            <div class="glass-card bg-rose-950/30 rounded-2xl p-3 sm:p-4 border border-rose-500/20">
+                                <span id="seconds" class="block text-2xl sm:text-4xl font-extrabold text-amber-300 font-mono">00</span>
+                                <span class="text-[11px] sm:text-xs text-rose-300 font-medium mt-1 block">Seconds</span>
+                            </div>
+                        </div>
+
+                        <!-- Date Footer -->
+                        <div class="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 px-2 gap-2">
+                            <span><i class="far fa-calendar-alt text-rose-400 ml-1"></i> Friday, October 23, 2026</span>
+                            <span><i class="far fa-clock text-amber-400 ml-1"></i> 15:00 (3:00 PM)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="pt-6">
+                    <button onclick="triggerLoveFireworks()" class="group relative px-8 py-4 rounded-full bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white font-bold shadow-xl shadow-rose-600/30 hover:shadow-rose-500/50 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-3 mx-auto">
+                        <i class="fas fa-heart text-xl group-hover:animate-ping"></i>
+                        <span>Express Your Excitement!</span>
+                        <i class="fas fa-sparkles text-amber-300"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scroll Indicator -->
+            <a href="#timeline" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center text-slate-400 hover:text-rose-300 transition-colors animate-bounce">
+                <span class="text-xs mb-1">Our Journey</span>
+                <i class="fas fa-chevron-down text-sm"></i>
+            </a>
+        </section>
+
+
+        <!-- 2. TIMELINE: Pre-date Moments & Journey -->
+        <section id="timeline" class="max-w-4xl mx-auto px-4 py-12 relative">
+            <div class="text-center mb-16 space-y-3">
+                <div class="inline-block p-3 rounded-2xl glass-card text-rose-400 mb-2">
+                    <i class="fas fa-route text-2xl"></i>
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-bold font-serif text-gradient-rose">Our Path to the First Date</h2>
+                <p class="text-slate-400 text-sm sm:text-base font-serif italic max-w-md mx-auto">
+                    The milestones of anticipation leading up to our wonderful meeting
+                </p>
+            </div>
+
+            <div class="relative border-l-2 border-rose-500/30 ml-4 sm:ml-32 space-y-10">
+
+                <!-- Step 1 -->
+                <div class="relative pl-8 sm:pl-12 group">
+                    <div class="absolute -left-4 top-0 w-8 h-8 rounded-full bg-rose-600 border-4 border-slate-950 flex items-center justify-center text-xs text-white shadow-lg shadow-rose-600/50">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <div class="glass-card glass-card-hover rounded-2xl p-6 border border-white/10">
+                        <span class="text-xs font-bold text-amber-300 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20 inline-block mb-3">
+                            The Spark
+                        </span>
+                        <h3 class="text-xl font-bold text-rose-100 mb-2 font-serif">First Hello & Conversation</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed font-serif">
+                            It all started with simple words, carrying a warmth unlike any other. That’s when Karim knew Wissem was someone truly special.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="relative pl-8 sm:pl-12 group">
+                    <div class="absolute -left-4 top-0 w-8 h-8 rounded-full bg-amber-500 border-4 border-slate-950 flex items-center justify-center text-xs text-slate-950 shadow-lg shadow-amber-500/50">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="glass-card glass-card-hover rounded-2xl p-6 border border-white/10">
+                        <span class="text-xs font-bold text-rose-300 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20 inline-block mb-3">
+                            The Promised Date
+                        </span>
+                        <h3 class="text-xl font-bold text-rose-100 mb-2 font-serif">Setting October 23</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed font-serif">
+                            The date was agreed upon: Friday, October 23, 2026, at 15:00. This date became the ultimate focus of all our excitement.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="relative pl-8 sm:pl-12 group">
+                    <div class="absolute -left-4 top-0 w-8 h-8 rounded-full bg-rose-500 border-4 border-slate-950 flex items-center justify-center text-xs text-white shadow-lg shadow-rose-500/50">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div class="glass-card glass-card-hover rounded-2xl p-6 border border-white/10">
+                        <span class="text-xs font-bold text-amber-300 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20 inline-block mb-3">
+                            Current Anticipation
+                        </span>
+                        <h3 class="text-xl font-bold text-rose-100 mb-2 font-serif">Days of Sweet Waiting</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed font-serif">
+                            We are right here in this moment! Counting hours and minutes, imagining how our first smile and greeting will feel face-to-face.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 4: Final Target -->
+                <div class="relative pl-8 sm:pl-12 group">
+                    <div class="absolute -left-4 top-0 w-8 h-8 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 border-4 border-slate-950 flex items-center justify-center text-xs text-white shadow-lg shadow-rose-500/50 animate-bounce">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="glass-card glass-card-hover rounded-2xl p-6 border border-rose-500/40 bg-rose-950/20">
+                        <span class="text-xs font-bold text-rose-200 bg-rose-500/20 px-3 py-1 rounded-full border border-rose-400/30 inline-block mb-3">
+                            The Ultimate Milestone • 10/23/2026 - 15:00
+                        </span>
+                        <h3 class="text-xl font-bold text-gradient-gold mb-2 font-serif">Our True Beginning</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed font-serif">
+                            When the clock strikes 3:00 PM, the world will pause for a few seconds... marking the start of an eternal story for Karim and Wissem.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- 3. PERSONAL MESSAGE: Expectation Letter -->
+        <section id="letter" class="max-w-3xl mx-auto px-4 py-12">
+            <div class="text-center mb-10 space-y-2">
+                <span class="text-xs uppercase tracking-widest text-rose-400 font-bold">Special Dedication Card</span>
+                <h2 class="text-3xl font-bold font-serif text-gradient-rose">A Note from Karim to Wissem</h2>
+                <p class="text-slate-400 text-sm font-serif italic">Tap the envelope below to reveal words of love and anticipation</p>
+            </div>
+
+            <div class="glass-card rounded-3xl p-6 sm:p-10 border border-rose-500/30 shadow-2xl relative overflow-hidden">
+                <div class="text-center pb-6 border-b border-white/10">
+                    <button id="openLetterBtn" onclick="toggleLetter()" class="px-6 py-3 rounded-full bg-gradient-to-r from-rose-600 to-rose-500 text-white font-bold text-sm shadow-lg hover:shadow-rose-600/50 hover:scale-105 transition-all flex items-center gap-2 mx-auto">
+                        <i id="envelopeIcon" class="fas fa-envelope-open-text"></i>
+                        <span id="envelopeBtnText">Open the Love Letter</span>
+                    </button>
+                </div>
+
+                <div id="letterContent" class="letter-content text-left font-serif leading-loose space-y-6 text-slate-200 text-lg">
+                    <div class="flex items-center justify-between border-b border-rose-500/20 pb-4 text-sm font-sans font-bold">
+                        <span class="text-rose-400">From: Karim</span>
+                        <span class="text-amber-300">To: Wissem (My Heart's Queen)</span>
+                    </div>
+
+                    <p class="first-letter:text-4xl first-letter:font-bold first-letter:text-rose-400 first-letter:mr-1">
+                        Dearest Wissem,
+                    </p>
+
+                    <p>
+                        As I write these words, I watch the hours and days ticking closer to our promised date: October 23, 2026. I cannot hide my excitement and eagerness for that moment when the distance of waiting ends and our eyes meet at exactly 3:00 PM.
+                    </p>
+
+                    <p>
+                        You have turned this date into an anchor for every passing moment, and a symbol for the most beautiful chapter of our lives. I truly believe this meeting won’t just be a casual date, but an eternal turning point where we write the first pages of our bright future together.
+                    </p>
+
+                    <p class="text-rose-300 font-semibold italic bg-rose-500/10 p-4 rounded-xl border-l-4 border-rose-500">
+                        "Waiting for you with all my love, passion, and excitement... because you are destiny’s greatest gift."
+                    </p>
+
+                    <div class="pt-6 border-t border-rose-500/20 flex flex-col items-start gap-1 font-sans">
+                        <span class="text-amber-300 text-lg font-bold">Always waiting for you,</span>
+                        <span class="text-rose-400 font-extrabold text-2xl font-serif">Karim ❤️</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Interactive Pre-date Surprise Wishes -->
+        <section class="max-w-2xl mx-auto px-4 pt-4">
+            <div class="glass-card rounded-3xl p-6 sm:p-8 border border-amber-500/30 text-center relative overflow-hidden">
+                <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fas fa-sparkles"></i>
+                </div>
+                <h3 class="text-2xl font-bold font-serif text-gradient-gold mb-2">Thoughts of Anticipation</h3>
+                <p class="text-slate-300 text-sm font-serif italic mb-6">Click to reveal a sweet thought from Karim to Wissem before we meet!</p>
+
+                <div id="surpriseBox" class="bg-slate-900/80 rounded-2xl p-6 border border-white/10 relative min-h-[120px] flex items-center justify-center">
+                    <p id="surpriseText" class="text-slate-400 text-sm italic font-serif">"Click the button below to display a anticipation note..."</p>
+                </div>
+
+                <button onclick="revealRandomWish()" class="mt-6 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-slate-950 font-extrabold text-xs shadow-lg hover:scale-105 active:scale-95 transition-all">
+                    <i class="fas fa-magic ml-1"></i> Show a Sweet Thought
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-white/10 py-8 text-center text-xs text-slate-500">
+        <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>An exceptional digital gift for <span class="text-rose-400 font-bold">Karim &amp; Wissem</span></p>
+            <p class="text-slate-600">The Upcoming Date: October 23, 2026 - 15:00</p>
+        </div>
+    </footer>
+
+    <!-- Logic Engine -->
+    <script>
+        /* ========================================================
+           1. Precise Countdown Engine & Auto-Celebration Trigger
+           ======================================================== */
+        // Target: Oct 23, 2026 at 15:00:00 (Month 9 in JS 0-index)
+        const targetDate = new Date(2026, 9, 23, 15, 0, 0); 
+        let hasReachedTarget = false;
+
+        function updateCountdown() {
+            const now = new Date();
+            const diff = targetDate - now;
+
+            const headerTitle = document.getElementById('countdownHeaderTitle');
+            const statusBadge = document.getElementById('statusBadge');
+
+            if (diff > 0) {
+                // Pre-date state: Count DOWN
+                const seconds = Math.floor((diff / 1000) % 60);
+                const minutes = Math.floor((diff / (1000 * 60)) % 60);
+                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+                document.getElementById('days').textContent = String(days).padStart(2, '0');
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            } else {
+                // Post-date/Live State: The Date is Happening or Passed
+                document.getElementById('days').textContent = "00";
+                document.getElementById('hours').textContent = "00";
+                document.getElementById('minutes').textContent = "00";
+                document.getElementById('seconds').textContent = "00";
+
+                if (headerTitle) {
+                    headerTitle.textContent = "🎉 The Meeting Time Has Come! Karim & Wissem are together now!";
+                    headerTitle.className = "text-sm sm:text-base text-amber-300 font-extrabold tracking-wider animate-bounce";
+                }
+
+                if (statusBadge) {
+                    statusBadge.innerHTML = `<i class="fas fa-heart text-rose-500 animate-ping"></i> <span class="text-amber-300 font-bold">The Great Date is Happening Now!</span> <i class="fas fa-sparkles text-amber-300"></i>`;
+                }
+
+                if (!hasReachedTarget) {
+                    hasReachedTarget = true;
+                    triggerLoveFireworks();
+                }
+            }
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+
+        /* ========================================================
+           2. Particles & Ambient Canvas
+           ======================================================== */
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class FloatingParticle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 80;
+                this.size = Math.random() * 12 + 6;
+                this.speedY = Math.random() * 0.7 + 0.3;
+                this.opacity = Math.random() * 0.5 + 0.2;
+                this.color = Math.random() > 0.3 ? '#fb7185' : '#facc15';
+                this.isHeart = Math.random() > 0.35;
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.x += Math.sin(this.y * 0.008) * 0.4;
+                if (this.y < -30) this.reset();
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = this.color;
+
+                if (this.isHeart) {
+                    const x = this.x;
+                    const y = this.y;
+                    const s = this.size / 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.bezierCurveTo(x - s, y - s, x - s * 2, y + s / 3, x, y + s * 1.5);
+                    ctx.bezierCurveTo(x + s * 2, y + s / 3, x + s, y - s, x, y);
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 30; i++) particles.push(new FloatingParticle());
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+
+        /* ========================================================
+           3. Web Audio Soft Melody Generator
+           ======================================================== */
+        let audioCtx = null;
+        let isPlaying = false;
+        let audioTimer = null;
+        const notes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+
+        function playSoftTone() {
+            if (!isPlaying || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                const note = notes[Math.floor(Math.random() * notes.length)];
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(note, audioCtx.currentTime);
+
+                gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime + 0.3);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 2.2);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 2.3);
+            } catch (e) {}
+
+            audioTimer = setTimeout(playSoftTone, Math.random() * 1000 + 800);
+        }
+
+        function toggleAudio() {
+            const musicIcon = document.getElementById('musicIcon');
+            const musicStatus = document.getElementById('musicStatus');
+
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            if (!isPlaying) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                isPlaying = true;
+                musicIcon.className = "fas fa-pause text-lg";
+                musicStatus.textContent = "Playing melodies ♪";
+                playSoftTone();
+            } else {
+                isPlaying = false;
+                clearTimeout(audioTimer);
+                musicIcon.className = "fas fa-music text-lg";
+                musicStatus.textContent = "Paused";
+            }
+        }
+
+
+        /* ========================================================
+           4. Letter Toggle & Fireworks
+           ======================================================== */
+        let letterOpen = false;
+        function toggleLetter() {
+            const letter = document.getElementById('letterContent');
+            const btnText = document.getElementById('envelopeBtnText');
+            const icon = document.getElementById('envelopeIcon');
+
+            letterOpen = !letterOpen;
+            if (letterOpen) {
+                letter.classList.add('open');
+                btnText.textContent = "Close Letter";
+                icon.className = "fas fa-envelope-open";
+                confetti({ particleCount: 45, spread: 60, origin: { y: 0.7 } });
+            } else {
+                letter.classList.remove('open');
+                btnText.textContent = "Open the Love Letter";
+                icon.className = "fas fa-envelope-open-text";
+            }
+        }
+
+        function triggerLoveFireworks() {
+            confetti({
+                particleCount: 80,
+                spread: 100,
+                origin: { y: 0.6 },
+                colors: ['#f43f5e', '#fb7185', '#facc15', '#ffffff']
+            });
+        }
+
+
+        /* ========================================================
+           5. Pre-date Thoughts Generator
+           ======================================================== */
+        const wishes = [
+            "✨ 'Wissem.. every second passing shortens the waiting time and grows the excitement.'",
+            "💖 'October 23, 2026 - at 15:00 won't just be a time, but the start of our new era.'",
+            "🌹 'Counting hours and minutes to see the smile that lights up my world.'",
+            "👑 'To my heart's queen Wissem: Karim is waiting for that moment with endless passion.'",
+            "💫 'Together soon, turning every dream into a wonderful reality.'"
+        ];
+
+        let wishIndex = 0;
+        function revealRandomWish() {
+            const textElem = document.getElementById('surpriseText');
+            wishIndex = (wishIndex + 1) % wishes.length;
+            textElem.style.opacity = '0';
+            setTimeout(() => {
+                textElem.textContent = wishes[wishIndex];
+                textElem.style.opacity = '1';
+                textElem.className = "text-amber-300 text-base font-bold font-serif italic leading-relaxed transition-opacity duration-300";
+            }, 200);
+
+            confetti({ particleCount: 20, spread: 35, origin: { y: 0.8 } });
+        }
+    </script>
+</body>
+</html>
