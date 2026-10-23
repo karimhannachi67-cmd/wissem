@@ -142,6 +142,11 @@
     <!-- Interactive Particle Background Canvas -->
     <canvas id="bgCanvas"></canvas>
 
+    <!-- Hidden YouTube Audio Player -->
+    <div style="display:none;">
+        <div id="youtube-player"></div>
+    </div>
+
     <!-- Floating Audio Control Widget -->
     <div class="fixed top-5 left-5 z-50">
         <div class="glass-card rounded-full p-2 pr-4 flex items-center space-x-3 shadow-2xl border border-rose-500/30 backdrop-blur-md">
@@ -149,8 +154,8 @@
                 <i id="musicIcon" class="fas fa-music text-lg"></i>
             </button>
             <div class="hidden sm:block text-xs">
-                <p class="font-bold text-rose-200">Melody of Anticipation</p>
-                <p id="musicStatus" class="text-slate-400 text-[10px]">Click to play soft tunes</p>
+                <p class="font-bold text-rose-200">Romantic Melody</p>
+                <p id="musicStatus" class="text-slate-400 text-[10px]">Click to play background music</p>
             </div>
         </div>
     </div>
@@ -409,12 +414,14 @@
         </div>
     </footer>
 
+    <!-- YouTube IFrame API Script -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
     <!-- Logic Engine -->
     <script>
         /* ========================================================
            1. Precise Countdown Engine & Auto-Celebration Trigger
            ======================================================== */
-        // Target: Oct 23, 2026 at 15:00:00 (Month 9 in JS 0-index)
         const targetDate = new Date(2026, 9, 23, 15, 0, 0); 
         let hasReachedTarget = false;
 
@@ -426,7 +433,6 @@
             const statusBadge = document.getElementById('statusBadge');
 
             if (diff > 0) {
-                // Pre-date state: Count DOWN
                 const seconds = Math.floor((diff / 1000) % 60);
                 const minutes = Math.floor((diff / (1000 * 60)) % 60);
                 const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
@@ -437,7 +443,6 @@
                 document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
                 document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
             } else {
-                // Post-date/Live State: The Date is Happening or Passed
                 document.getElementById('days').textContent = "00";
                 document.getElementById('hours').textContent = "00";
                 document.getElementById('minutes').textContent = "00";
@@ -454,7 +459,7 @@
 
                 if (!hasReachedTarget) {
                     hasReachedTarget = true;
-                    // تشغيل الألعاب النارية بشكل مستمر ودائم لا ينتهي
+                    // ألعاب نارية مستمرة بلا توقف عند بلوغ الموعد
                     setInterval(function() {
                         confetti({
                             particleCount: 60,
@@ -548,52 +553,44 @@
 
 
         /* ========================================================
-           3. Web Audio Soft Melody Generator
+           3. Hidden YouTube Audio Player Controller (ZyJFCIVLatk)
            ======================================================== */
-        let audioCtx = null;
+        let ytPlayer;
         let isPlaying = false;
-        let audioTimer = null;
-        const notes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
 
-        function playSoftTone() {
-            if (!isPlaying || !audioCtx) return;
-            try {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-
-                const note = notes[Math.floor(Math.random() * notes.length)];
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(note, audioCtx.currentTime);
-
-                gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime + 0.3);
-                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 2.2);
-
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                osc.start();
-                osc.stop(audioCtx.currentTime + 2.3);
-            } catch (e) {}
-
-            audioTimer = setTimeout(playSoftTone, Math.random() * 1000 + 800);
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('youtube-player', {
+                height: '0',
+                width: '0',
+                videoId: 'ZyJFCIVLatk', // معرف الفيديو الخاص بك
+                playerVars: {
+                    'autoplay': 0,
+                    'loop': 1,
+                    'playlist': 'ZyJFCIVLatk' // لتكرار الأغنية تلقائياً
+                },
+                events: {
+                    'onReady': () => console.log("YouTube Player Ready")
+                }
+            });
         }
 
         function toggleAudio() {
             const musicIcon = document.getElementById('musicIcon');
             const musicStatus = document.getElementById('musicStatus');
 
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (!ytPlayer || typeof ytPlayer.getPlayerState !== 'function') {
+                alert("Please wait a moment for the YouTube player to load.");
+                return;
+            }
 
             if (!isPlaying) {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
+                ytPlayer.playVideo();
                 isPlaying = true;
                 musicIcon.className = "fas fa-pause text-lg";
-                musicStatus.textContent = "Playing melodies ♪";
-                playSoftTone();
+                musicStatus.textContent = "Playing Romantic Music ♪";
             } else {
+                ytPlayer.pauseVideo();
                 isPlaying = false;
-                clearTimeout(audioTimer);
                 musicIcon.className = "fas fa-music text-lg";
                 musicStatus.textContent = "Paused";
             }
